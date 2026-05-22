@@ -1,37 +1,212 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>AI Helpdesk</title>
-   <link rel="stylesheet" href="/static/style.css">
+
+    <title>GenAI Academic Helpdesk</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+
 </head>
+
 <body>
 
 <div class="container">
-    <h2>🎓 AI Helpdesk</h2>
 
-    <div id="chat-box"></div>
+    <!-- Heading -->
 
-    <input type="text" id="question" placeholder="Ask something...">
-    <button onclick="ask()">Ask</button>
+    <h1>🤖 GenAI Academic Helpdesk</h1>
+
+    <p class="subtitle">
+        Your intelligent campus assistant
+    </p>
+
+
+    <!-- Suggested Questions -->
+
+    <div class="suggestions">
+
+        <button onclick="setQuestion('What is library timing?')">
+            📚 Library
+        </button>
+
+        <button onclick="setQuestion('What is placement eligibility?')">
+            💼 Placement
+        </button>
+
+        <button onclick="setQuestion('What are hostel rules?')">
+            🏠 Hostel
+        </button>
+
+        <button onclick="setQuestion('When do exams start?')">
+            📝 Exams
+        </button>
+
+    </div>
+
+
+    <!-- Chat Box -->
+
+    <div id="chat-box">
+
+        <div class="bot-msg">
+
+            👋 Hello! I am your GenAI Academic Assistant.
+            Ask anything about:
+            syllabus, placements, hostel, exams and more.
+
+        </div>
+
+    </div>
+
+
+    <!-- Input Area -->
+
+    <div class="input-area">
+
+        <input
+            type="text"
+            id="question"
+            placeholder="Ask your question..."
+        >
+
+        <button onclick="ask()">
+            Send
+        </button>
+
+    </div>
+
 </div>
 
+
 <script>
+
+// ----------------------------
+// Suggested Questions
+// ----------------------------
+
+function setQuestion(text){
+
+    document.getElementById("question").value = text;
+}
+
+
+// ----------------------------
+// Ask Function
+// ----------------------------
+
 async function ask() {
+
     let q = document.getElementById("question").value;
 
+    if(q.trim() === "") return;
+
+    let box = document.getElementById("chat-box");
+
+
+    // User Message
+
+    box.innerHTML += `
+
+        <div class="user-msg">
+
+            ${q}
+
+            <div class="time">
+
+                ${new Date().toLocaleTimeString()}
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    // Typing Animation
+
+    box.innerHTML += `
+
+        <div class="typing" id="loading">
+
+            AI is typing...
+
+        </div>
+
+    `;
+
+    box.scrollTop = box.scrollHeight;
+
+
+    // Fetch API
+
     let res = await fetch("/ask", {
+
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({question: q})
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            question: q
+        })
+
     });
+
 
     let data = await res.json();
 
-    let box = document.getElementById("chat-box");
-    box.innerHTML += "<p><b>You:</b> " + q + "</p>";
-    box.innerHTML += "<p><b>AI:</b> " + data.answer + "</p>";
+
+    // Remove Loading Animation
+
+    document.getElementById("loading").remove();
+
+
+    // AI Response
+
+    box.innerHTML += `
+
+    <div class="bot-msg">
+
+        ${data.answer}
+
+        <div class="time">
+
+            ${new Date().toLocaleTimeString()}
+
+        </div>
+
+    </div>
+
+`;
+
+    // Auto Scroll
+
+    box.scrollTop = box.scrollHeight;
+
+
+    // Clear Input
+
+    document.getElementById("question").value = "";
 }
+
+
+// ----------------------------
+// Enter Key Support
+// ----------------------------
+
+document.getElementById("question")
+.addEventListener("keypress", function(event){
+
+    if(event.key === "Enter"){
+
+        ask();
+    }
+});
+
 </script>
 
 </body>
+
 </html>
